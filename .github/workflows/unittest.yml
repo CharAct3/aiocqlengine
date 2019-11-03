@@ -8,7 +8,7 @@ jobs:
     runs-on: ubuntu-latest
     name: Unittest with pytest
     services:
-      redis:
+      cassandra:
         image: cassandra
         ports:
           - 9042:9042
@@ -18,9 +18,8 @@ jobs:
     - uses: actions/setup-python@v1
       with:
         python-version: '3.x'
-    - run: pip install --user poetry
-
-    - run: poetry install
-
+    - run: |
+        pip install --user poetry
+        poetry install
     - name: Run test
       run: pytest
