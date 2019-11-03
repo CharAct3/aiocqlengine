@@ -1,7 +1,7 @@
 # aiocqlengine
 Async wrapper for cqlengine of cassandra python driver.
 
-[![Actions Status](https://github.com/{owner}/{repo}/workflows/{workflow_name}/badge.svg)](https://github.com/{owner}/{repo}/actions)
+[![Actions Status](https://github.com/charact3/aiocqlengine/workflows/unittest/badge.svg)](https://github.com/charact3/aiocqlengine/actions)
 
 
 ## Get Started
