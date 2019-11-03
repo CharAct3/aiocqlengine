@@ -3,13 +3,24 @@ on: [push]
 name: unittest
 
 jobs:
+
   unittest:
     runs-on: ubuntu-latest
     name: Unittest with pytest
+    services:
+      redis:
+        image: cassandra
+        ports:
+          - 9042:9042
+
     steps:
     - uses: actions/checkout@v1
     - uses: actions/setup-python@v1
       with:
         python-version: '3.x'
-    - name: Get the output time
-      run: echo "test github actions"
+    - run: pip install --user poetry
+
+    - run: poetry install
+
+    - name: Run test
+      run: pytest
