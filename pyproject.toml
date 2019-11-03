@@ -1,0 +1,15 @@
+[tool.poetry]
+name = "aiocqlengine"
+version = "0.0.1"
+description = ""
+authors = ["Darren <charact3@gmail.com>"]
+
+[tool.poetry.dependencies]
+python = "^3.6"
+
+[tool.poetry.dev-dependencies]
+pytest = "^3.0"
+
+[build-system]
+requires = ["poetry>=0.12"]
+build-backend = "poetry.masonry.api"
