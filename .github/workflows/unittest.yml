@@ -20,7 +20,7 @@ jobs:
         python-version: '3.x'
     - run: |
         pip install poetry
-        pip install cassandra-driver
+        poetry run pip install cassandra-driver --install-option --no-cython
         poetry install
     - name: Run test
       run: poetry run pytest

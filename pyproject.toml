@@ -6,7 +6,7 @@ authors = ["Darren <charact3@gmail.com>"]
 
 [tool.poetry.dependencies]
 python = "^3.6"
-cassandra-driver = {version = "^3.20", install-option = ["--no-cython"]}
+cassandra-driver = "^3.20"
 aiocassandra = "^2.0"
 
 [tool.poetry.dev-dependencies]
