@@ -5,6 +5,10 @@ This project is built on [cassandra-python-driver](https://github.com/datastax/p
 
 [![Actions Status](https://github.com/charact3/aiocqlengine/workflows/unittest/badge.svg)](https://github.com/charact3/aiocqlengine/actions)
 
+## Installation
+```sh
+$ pip install aiocqlengine
+```
 
 ## Get Started
 

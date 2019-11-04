@@ -1,8 +1,10 @@
 [tool.poetry]
 name = "aiocqlengine"
-version = "0.1.0"
-description = ""
+version = "0.1.1"
+description = "Async wrapper for cqlengine of cassandra python driver."
 authors = ["Darren <charact3@gmail.com>"]
+license = "MIT"
+readme = "README.md"
 
 [tool.poetry.dependencies]
 python = "^3.6"
