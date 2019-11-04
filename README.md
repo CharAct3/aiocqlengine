@@ -1,6 +1,8 @@
 # aiocqlengine
 Async wrapper for cqlengine of cassandra python driver.
 
+This project is built on [cassandra-python-driver](https://github.com/datastax/python-driver) and [aiocassandra](https://github.com/aio-libs/aiocassandra).
+
 [![Actions Status](https://github.com/charact3/aiocqlengine/workflows/unittest/badge.svg)](https://github.com/charact3/aiocqlengine/actions)
 
 
