@@ -20,6 +20,7 @@ jobs:
         python-version: '3.x'
     - run: |
         pip install poetry
+        pip install cassandra-driver
         poetry install
     - name: Run test
-      run: pytest
+      run: poetry run pytest
