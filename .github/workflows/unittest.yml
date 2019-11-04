@@ -19,7 +19,7 @@ jobs:
       with:
         python-version: '3.x'
     - run: |
-        pip install --user poetry
+        pip install poetry
         poetry install
     - name: Run test
       run: pytest
