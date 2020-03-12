@@ -10,7 +10,7 @@ This project is built on [cassandra-python-driver](https://github.com/datastax/p
 $ pip install aiocqlengine
 ```
 
-## Get Started
+## Example usage
 
 ```python
 import asyncio
@@ -19,11 +19,9 @@ import os
 
 from aiocassandra import aiosession
 from aiocqlengine.models import AioModel
+from aiocqlengine.query import AioBatchQuery
 from cassandra.cluster import Cluster
 from cassandra.cqlengine import columns, connection, management
-
-cluster = Cluster()
-session = cluster.connect()
 
 
 class User(AioModel):
@@ -31,17 +29,11 @@ class User(AioModel):
     username = columns.Text()
 
 
-async def main():
-    aiosession(session)
-
-    # Set aiosession for cqlengine
-    session.set_keyspace('example_keyspace')
-    connection.set_session(session)
-
+async def run_aiocqlengine_example():
     # Model.objects.create() and Model.create() in async way:
     user_id = uuid.uuid4()
     await User.objects.async_create(user_id=user_id, username='user1')
-    # also can use: await User.async_create(user_id=user_id, username='user1)
+    await User.async_create(user_id=uuid.uuid4(), username='user2')
 
     # Model.objects.all() and Model.all() in async way:
     print(list(await User.async_all()))
@@ -52,36 +44,60 @@ async def main():
 
     # Model.objects.get() and Model.get() in async way:
     user = await User.objects.async_get(user_id=user_id)
-    assert user.user_id == (await User.async_get(user_id=user_id)).user_id
+    await User.async_get(user_id=user_id)
     print(user, user.username)
 
-    # obj.save() in async way:
+    # Model.save() in async way:
     user.username = 'saved-user1'
     await user.async_save()
 
-    # obj.delete() in async way:
+    # Model.delete() in async way:
     await user.async_delete()
 
-    # Didn't break original functions
-    print('Left users: ', len(User.objects.all()))
+    # Batch Query in async way:
+    batch_query = AioBatchQuery()
+    User.batch(batch_query).create(user_id=uuid.uuid4(), username="user-1")
+    User.batch(batch_query).create(user_id=uuid.uuid4(), username="user-2")
+    User.batch(batch_query).create(user_id=uuid.uuid4(), username="user-3")
+    await batch_query.async_execute()
+
+    # The original cqlengine functions were still there
+    print(len(User.objects.all()))
 
 
-def create_keyspace(keyspace):
+def create_session():
+    cluster = Cluster()
+    session = cluster.connect()
+
+    # Create keyspace, if already have keyspace your can skip this
     os.environ['CQLENG_ALLOW_SCHEMA_MANAGEMENT'] = 'true'
     connection.register_connection('cqlengine', session=session, default=True)
-    management.create_keyspace_simple(keyspace, replication_factor=1)
-    management.sync_table(User, keyspaces=[keyspace])
+    management.create_keyspace_simple('example', replication_factor=1)
+    management.sync_table(User, keyspaces=['example'])
+
+    # Wrap cqlengine connection with aiosession
+    aiosession(session)
+    session.set_keyspace('example')
+    connection.set_session(session)
+    return session
 
 
-create_keyspace('example_keyspace')
+def main():
+    # Setup connection for cqlengine
+    session = create_session()
 
-loop = asyncio.get_event_loop()
-loop.run_until_complete(main())
-cluster.shutdown()
-loop.close()
+    # Run the example function in asyncio loop
+    loop = asyncio.get_event_loop()
+    loop.run_until_complete(run_aiocqlengine_example())
 
+    # Shutdown the connection and loop
+    session.cluster.shutdown()
+    loop.close()
+
+
+if __name__ == '__main__':
+    main()
 ```
-
 
 ## License
 This project is under MIT license.
