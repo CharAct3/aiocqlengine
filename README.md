@@ -10,6 +10,28 @@ This project is built on [cassandra-python-driver](https://github.com/datastax/p
 $ pip install aiocqlengine
 ```
 
+## Change log
+`0.1.1`
+- Add `AioBatchQuery`:
+  ```python
+  batch_query = AioBatchQuery()
+  for i in range(100):
+      Model.batch(batch_query).create(id=uuid.uuid4())
+  await batch_query.async_execute()
+  ```
+
+`0.2.0`
+- Patch the `aiosession` for `ResultSet`, now need to import session by:
+  ```python
+  from aiocqlengine.session import aiosession_for_cqlengine
+  ```
+- Add new method of `AioModel` for paging:
+  ```python
+  async for results in AioModel.async_iterate(fetch_size=100):
+      # Do something with results
+      pass
+  ```
+
 ## Example usage
 
 ```python
@@ -17,9 +39,9 @@ import asyncio
 import uuid
 import os
 
-from aiocassandra import aiosession
 from aiocqlengine.models import AioModel
 from aiocqlengine.query import AioBatchQuery
+from aiocqlengine.session import aiosession_for_cqlengine
 from cassandra.cluster import Cluster
 from cassandra.cqlengine import columns, connection, management
 
@@ -61,6 +83,10 @@ async def run_aiocqlengine_example():
     User.batch(batch_query).create(user_id=uuid.uuid4(), username="user-3")
     await batch_query.async_execute()
 
+    # Async iterator
+    async for users in User.async_iterate(fetch_size=100):
+        pass
+
     # The original cqlengine functions were still there
     print(len(User.objects.all()))
 
@@ -76,7 +102,7 @@ def create_session():
     management.sync_table(User, keyspaces=['example'])
 
     # Wrap cqlengine connection with aiosession
-    aiosession(session)
+    aiosession_for_cqlengine(session)
     session.set_keyspace('example')
     connection.set_session(session)
     return session

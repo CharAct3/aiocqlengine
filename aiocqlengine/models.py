@@ -1,5 +1,7 @@
 from cassandra.cqlengine.models import Model, PolymorphicModelException
-from cassandra.cqlengine.query import ValidationError
+from cassandra.cqlengine.query import conn, ValidationError
+from cassandra.cqlengine.statements import SelectStatement
+from cassandra.query import SimpleStatement
 
 from aiocqlengine.query import AioDMLQuery, AioQuerySet
 
@@ -108,8 +110,8 @@ class AioModel(Model):
                 if v != current_value:
                     raise ValidationError(
                         "Cannot apply update to primary key '{0}' for {1}.{2}".
-                        format(column_id, self.__module__,
-                               self.__class__.__name__))
+                            format(column_id, self.__module__,
+                                   self.__class__.__name__))
 
             setattr(self, column_id, v)
 
@@ -140,3 +142,28 @@ class AioModel(Model):
         self._timestamp = None
 
         return self
+
+    @classmethod
+    async def async_iterate(cls,
+                            fetch_size: int,
+                            fields: list = None,
+                            limit: int = None):
+        """Iteration by fetch_size
+        """
+        statement = SimpleStatement(
+            str(SelectStatement(
+                cls.column_family_name(), fields=fields, limit=limit)),
+            fetch_size=fetch_size)
+        connection = conn.get_connection()
+
+        paging_state = None
+        while True:
+            # Execute query
+            result_set = await connection.session.execute_future(
+                statement, paging_state=paging_state)
+            yield [cls(**result) for result in result_set.current_rows]
+            paging_state = result_set.paging_state
+
+            # End
+            if paging_state is None:
+                break
