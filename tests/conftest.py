@@ -6,7 +6,7 @@ from cassandra.cluster import Cluster
 from cassandra.cqlengine import management
 from cassandra.cqlengine import connection as cqlengine_connection
 
-from aiocassandra import aiosession
+from aiocqlengine.session import aiosession_for_cqlengine
 
 asyncio.set_event_loop(None)
 
@@ -28,7 +28,7 @@ def event_loop():
 @pytest.fixture
 def cassandra(cluster, event_loop):
     session = cluster.connect()
-    return aiosession(session, loop=event_loop)
+    return aiosession_for_cqlengine(session, loop=event_loop)
 
 
 @pytest.fixture

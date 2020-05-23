@@ -87,3 +87,30 @@ async def test_batch_query_async_execute(cqlengine_management):
     users = await User.async_all()
     username_set = {user.username for user in users}
     assert username_set == {"user-1", "user-2", "user-3"}
+
+
+@pytest.mark.asyncio
+async def test_async_iterate(cqlengine_management):
+    cqlengine_management.sync_table(User)
+    batch_query = AioBatchQuery()
+    for i in range(101):
+        User.batch(batch_query).create(user_id=uuid.uuid4(), username=f'{i}')
+    await batch_query.async_execute()
+
+    # Try iterate all
+    iter_count_1 = 0
+    result_count_1 = 0
+    async for users in User.async_iterate(fetch_size=10):
+        iter_count_1 += 1
+        result_count_1 += len(users)
+    assert iter_count_1 == 11
+    assert result_count_1 == 101
+
+    # Try iterate with limit
+    iter_count_2 = 0
+    result_count_2 = 0
+    async for users in User.async_iterate(fetch_size=10, limit=80):
+        iter_count_2 += 1
+        result_count_2 += len(users)
+    assert iter_count_2 == 8
+    assert result_count_2 == 80

@@ -249,6 +249,7 @@ class AioDMLQuery(DMLQuery):
 
 
 class AioQuerySet(ModelQuerySet):
+
     async def _async_execute_query(self):
         if self._batch:
             raise CQLEngineException("Only inserts, updates, "
