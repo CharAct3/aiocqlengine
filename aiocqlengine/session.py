@@ -1,11 +1,11 @@
+import asyncio
 from functools import partial
 from types import MethodType
 
-from aiocassandra import aiosession
 from cassandra.cluster import ResultSet
 
 
-def asyncio_result_set(self, async_fut, cassandra_fut, result):
+def _asyncio_result(self, async_fut, cassandra_fut, result):
     """
     Return ResultSet instead of return initial response
     """
@@ -13,30 +13,32 @@ def asyncio_result_set(self, async_fut, cassandra_fut, result):
         return
 
     result_set = ResultSet(cassandra_fut, result)
-    self._asyncio_loop.call_soon_threadsafe(
-        async_fut.set_result, result_set)
+    self._asyncio_loop.call_soon_threadsafe(async_fut.set_result,
+                                            result_set)
+
+
+def _asyncio_exception(self, fut, exc):
+    if fut.cancelled():
+        return
+    self._asyncio_loop.call_soon_threadsafe(fut.set_exception, exc)
 
 
 async def execute_future(self, *args, **kwargs):
-    _request = partial(self.execute_async, *args, **kwargs)
-    cassandra_fut = await self._asyncio_loop.run_in_executor(
-        self._asyncio_executor,
-        _request
-    )
-
-    asyncio_fut = self._asyncio_fut_factory()
-
+    cassandra_fut = self.execute_async(*args, **kwargs)
+    future = asyncio.Future(loop=self._asyncio_loop)
     cassandra_fut.add_callbacks(
-        callback=partial(self._asyncio_result, asyncio_fut, cassandra_fut),
-        errback=partial(self._asyncio_exception, asyncio_fut)
+        callback=partial(self._asyncio_result, future, cassandra_fut),
+        errback=partial(self._asyncio_exception, future)
     )
 
-    return await asyncio_fut
+    return await future
 
 
 def aiosession_for_cqlengine(session, *, executor=None, loop=None):
-    session = aiosession(session, executor=executor, loop=loop)
-    session._asyncio_result = MethodType(asyncio_result_set, session)
+    # session = aiosession(session, executor=executor, loop=loop)
+
+    session._asyncio_loop = loop
+    session._asyncio_exception = MethodType(_asyncio_exception, session)
+    session._asyncio_result = MethodType(_asyncio_result, session)
     session.execute_future = MethodType(execute_future, session)
     return session
-
