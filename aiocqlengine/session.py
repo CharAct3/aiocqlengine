@@ -34,9 +34,7 @@ async def execute_future(self, *args, **kwargs):
     return await future
 
 
-def aiosession_for_cqlengine(session, *, executor=None, loop=None):
-    # session = aiosession(session, executor=executor, loop=loop)
-
+def aiosession_for_cqlengine(session, *, loop=None):
     session._asyncio_loop = loop
     session._asyncio_exception = MethodType(_asyncio_exception, session)
     session._asyncio_result = MethodType(_asyncio_result, session)

@@ -1,7 +1,7 @@
 # aiocqlengine
 Async wrapper for cqlengine of cassandra python driver.
 
-This project is built on [cassandra-python-driver](https://github.com/datastax/python-driver) and [aiocassandra](https://github.com/aio-libs/aiocassandra).
+This project is built on [cassandra-python-driver](https://github.com/datastax/python-driver).
 
 [![Actions Status](https://github.com/charact3/aiocqlengine/workflows/unittest/badge.svg)](https://github.com/charact3/aiocqlengine/actions)
 
@@ -11,17 +11,12 @@ $ pip install aiocqlengine
 ```
 
 ## Change log
-`0.1.1`
-- Add `AioBatchQuery`:
-  ```python
-  batch_query = AioBatchQuery()
-  for i in range(100):
-      Model.batch(batch_query).create(id=uuid.uuid4())
-  await batch_query.async_execute()
-  ```
+
+`0.3.0`
+- Due to `aiocassandra` is not maintained, removed the `aiocassandra` dependency.
 
 `0.2.0`
-- Patch the `aiosession` for `ResultSet`, now need to import session by:
+- Create new session wrapper for `ResultSet`, users need to wrap session by `aiosession_for_cqlengine`:
   ```python
   from aiocqlengine.session import aiosession_for_cqlengine
   ```
@@ -30,6 +25,15 @@ $ pip install aiocqlengine
   async for results in AioModel.async_iterate(fetch_size=100):
       # Do something with results
       pass
+  ```
+
+`0.1.1`
+- Add `AioBatchQuery`:
+  ```python
+  batch_query = AioBatchQuery()
+  for i in range(100):
+      Model.batch(batch_query).create(id=uuid.uuid4())
+  await batch_query.async_execute()
   ```
 
 ## Example usage
@@ -101,7 +105,7 @@ def create_session():
     management.create_keyspace_simple('example', replication_factor=1)
     management.sync_table(User, keyspaces=['example'])
 
-    # Wrap cqlengine connection with aiosession
+    # Wrap cqlengine connection
     aiosession_for_cqlengine(session)
     session.set_keyspace('example')
     connection.set_session(session)

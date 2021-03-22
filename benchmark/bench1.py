@@ -3,8 +3,6 @@ import uuid
 import os
 from time import time
 
-from cassandra.io.asyncioreactor import AsyncioConnection
-
 from aiocqlengine.models import AioModel
 from aiocqlengine.query import AioBatchQuery
 from aiocqlengine.session import aiosession_for_cqlengine
@@ -58,7 +56,7 @@ async def run_aiocqlengine_example():
 
 
 def create_session():
-    cluster = Cluster()  # connection_class=AsyncioConnection)
+    cluster = Cluster()
     session = cluster.connect()
 
     # Create keyspace, if already have keyspace your can skip this
@@ -80,7 +78,7 @@ def create_session():
 async def benchmark():
     await asyncio.gather(*[
         User.async_create(user_id=uuid.uuid4(),
-                          username='') for _ in range(2000)
+                          username='') for _ in range(20000)
     ])
 
 

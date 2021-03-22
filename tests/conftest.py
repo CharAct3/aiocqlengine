@@ -5,7 +5,6 @@ import pytest
 from cassandra.cluster import Cluster
 from cassandra.cqlengine import management
 from cassandra.cqlengine import connection as cqlengine_connection
-from cassandra.io.asyncioreactor import AsyncioConnection
 
 from aiocqlengine.session import aiosession_for_cqlengine
 
@@ -21,7 +20,7 @@ def event_loop():
 
 @pytest.fixture
 def cluster():
-    cluster = Cluster(connection_class=AsyncioConnection)
+    cluster = Cluster()
     yield cluster
     cluster.shutdown()
 
