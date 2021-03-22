@@ -1,47 +1,7 @@
-# aiocqlengine
-Async wrapper for cqlengine of cassandra python driver.
-
-This project is built on [cassandra-python-driver](https://github.com/datastax/python-driver).
-
-[![Actions Status](https://github.com/charact3/aiocqlengine/workflows/unittest/badge.svg)](https://github.com/charact3/aiocqlengine/actions)
-
-## Installation
-```sh
-$ pip install aiocqlengine
-```
-
-## Change log
-
-`0.3.0`
-- Due to `aiocassandra` is not maintained, removed the `aiocassandra` dependency.
-
-`0.2.0`
-- Create new session wrapper for `ResultSet`, users need to wrap session by `aiosession_for_cqlengine`:
-  ```python
-  from aiocqlengine.session import aiosession_for_cqlengine
-  ```
-- Add new method of `AioModel` for paging:
-  ```python
-  async for results in AioModel.async_iterate(fetch_size=100):
-      # Do something with results
-      pass
-  ```
-
-`0.1.1`
-- Add `AioBatchQuery`:
-  ```python
-  batch_query = AioBatchQuery()
-  for i in range(100):
-      Model.batch(batch_query).create(id=uuid.uuid4())
-  await batch_query.async_execute()
-  ```
-
-## Example usage
-
-```python
 import asyncio
 import uuid
 import os
+from time import time
 
 from aiocqlengine.models import AioModel
 from aiocqlengine.query import AioBatchQuery
@@ -105,20 +65,32 @@ def create_session():
     management.create_keyspace_simple('example', replication_factor=1)
     management.sync_table(User, keyspaces=['example'])
 
-    # Wrap cqlengine connection
-    aiosession_for_cqlengine(session)
+    # Run the example function in asyncio loop
+    loop = asyncio.get_event_loop()
+
+    # Wrap cqlengine connection with aiosession
+    aiosession_for_cqlengine(session, loop=loop)
     session.set_keyspace('example')
     connection.set_session(session)
-    return session
+    return session, loop
+
+
+async def benchmark():
+    await asyncio.gather(*[
+        User.async_create(user_id=uuid.uuid4(),
+                          username='') for _ in range(20000)
+    ])
 
 
 def main():
     # Setup connection for cqlengine
-    session = create_session()
+    session, loop = create_session()
 
-    # Run the example function in asyncio loop
-    loop = asyncio.get_event_loop()
-    loop.run_until_complete(run_aiocqlengine_example())
+    print('start')
+    start = time()
+    loop.run_until_complete(benchmark())
+    end = time()
+    print(f'Elapsed time: {end - start}')
 
     # Shutdown the connection and loop
     session.cluster.shutdown()
@@ -127,7 +99,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-```
-
-## License
-This project is under MIT license.

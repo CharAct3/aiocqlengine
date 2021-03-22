@@ -12,17 +12,17 @@ asyncio.set_event_loop(None)
 
 
 @pytest.fixture
-def cluster():
-    cluster = Cluster()
-    yield cluster
-    cluster.shutdown()
-
-
-@pytest.fixture
 def event_loop():
     loop = asyncio.new_event_loop()
     yield loop
     loop.close()
+
+
+@pytest.fixture
+def cluster():
+    cluster = Cluster()
+    yield cluster
+    cluster.shutdown()
 
 
 @pytest.fixture
