@@ -35,6 +35,13 @@ class AioModel(Model):
         ).async_delete()
 
     @classmethod
+    async def async_first(cls):
+        """
+        This is a pass-through to the model objects().async_first()
+        """
+        return await cls.objects.async_first()
+
+    @classmethod
     async def async_all(cls):
         """
         Returns a queryset representing all stored objects.
