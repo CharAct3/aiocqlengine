@@ -290,6 +290,16 @@ class AioQuerySet(ModelQuerySet):
                     self._if_exists).using(connection=self._connection
                                            ).async_save())
 
+    async def async_first(self):
+        await self._async_execute_query()
+
+        try:
+            obj = self[0]
+        except IndexError:
+            return None
+        
+        return obj
+
     async def async_all(self):
         await self._async_execute_query()
         return self

@@ -16,6 +16,7 @@ class User(AioModel):
 async def test_queryset_async_functions(cqlengine_management):
     """test cqlengine Model async functions:
     Model.objects.async_get()
+    Model.objects.async_first()
     Model.objects.async_all()
     Model.objects.async_create()
     Model.objects(id=obj_id).async_update()
@@ -28,7 +29,8 @@ async def test_queryset_async_functions(cqlengine_management):
     users = await User.objects.async_all()
     user = users[0]
     _user = await User.objects.async_get(user_id=user.user_id)
-    assert user.username == _user.username == username1
+    _user2 = await User.async_first()
+    assert user.username == _user.username == _user2.username == username1
 
     # test DML query: Model.objects(id=obj_id).async_update()
     username2 = "test-username-2"
@@ -41,6 +43,7 @@ async def test_queryset_async_functions(cqlengine_management):
 async def test_model_async_functions(cqlengine_management):
     """test cqlengine Model async functions:
     Model.async_get()
+    Model.async_first()
     Model.async_all()
     Model.async_create()
     obj.async_update()
@@ -49,13 +52,14 @@ async def test_model_async_functions(cqlengine_management):
     """
     cqlengine_management.sync_table(User)
 
-    # test: Model.async_create(), Model.async_all(), Model.async_get()
+    # test: Model.async_create(), Model.async_all(), Model.async_get(), Model.async_first()
     username1 = "test-username-1"
     await User.async_create(user_id=uuid.uuid4(), username=username1)
     users = await User.async_all()
     user = users[0]
     _user = await User.async_get(user_id=user.user_id)
-    assert user.username == _user.username == username1
+    _user2 = await User.async_first()
+    assert user.username == _user.username == _user2.username == username1
 
     # test: obj.async_save()
     username2 = "test-username-2"
