@@ -1,9 +1,6 @@
-on: [push]
-
 name: unittest
-
+on: [push, pull_request]
 jobs:
-
   unittest:
     runs-on: ubuntu-latest
     name: Unittest with pytest
@@ -16,12 +13,12 @@ jobs:
       CASS_DRIVER_NO_CYTHON: 1
 
     steps:
-    - uses: actions/checkout@v1
-    - uses: actions/setup-python@v1
-      with:
-        python-version: '3.x'
-    - run: |
-        pip install poetry
-        poetry install
-    - name: Run test
-      run: poetry run pytest
+      - uses: actions/checkout@v2
+      - uses: actions/setup-python@v1
+        with:
+          python-version: '3.x'
+      - run: |
+          pip install poetry
+          poetry install
+      - name: Run test
+        run: poetry run pytest
