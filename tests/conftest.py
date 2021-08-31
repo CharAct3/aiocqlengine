@@ -20,7 +20,8 @@ def event_loop():
 
 @pytest.fixture
 def cluster():
-    cluster = Cluster()
+    cassandra_host = os.getenv("CASSANDRA_HOST", "127.0.0.1")
+    cluster = Cluster([cassandra_host])
     yield cluster
     cluster.shutdown()
 
